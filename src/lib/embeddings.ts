@@ -1,12 +1,12 @@
-import { openai, EMBEDDING_MODEL } from './openaiClient.js';
-import { withBackoff } from './retry.js';
+import { logEvent, logUsage } from './auditLog.js';
 import { getCachedEmbedding, setCachedEmbedding } from './embeddingCache.js';
-import { logUsage, logEvent } from './auditLog.js';
+import { EMBEDDING_MODEL, openai } from './openaiClient.js';
+import { withBackoff } from './retry.js';
 
 const BATCH_SIZE = 100;
 
 // Embeds texts in order, serving cache hits locally and batching misses into one API call per BATCH_SIZE.
-export async function embedTexts(texts, { userId } = {}) {
+export async function embedTexts(texts: string[], { userId }: { userId?: string } = {}): Promise<number[][]> {
   const results = await Promise.all(texts.map((t) => getCachedEmbedding(EMBEDDING_MODEL, t)));
   const misses = results.flatMap((r, i) => (r ? [] : [i]));
   if (misses.length < texts.length) {
@@ -17,7 +17,7 @@ export async function embedTexts(texts, { userId } = {}) {
     const batch = misses.slice(b, b + BATCH_SIZE);
     const started = Date.now();
     const response = await withBackoff(
-      () => openai.embeddings.create({ model: EMBEDDING_MODEL, input: batch.map((i) => texts[i]) }),
+      () => openai.embeddings.create({ model: EMBEDDING_MODEL, input: batch.map((i) => texts[i] ?? '') }),
       { label: 'openai.embeddings' },
     );
     await logUsage({
@@ -30,9 +30,14 @@ export async function embedTexts(texts, { userId } = {}) {
     });
     for (const d of response.data) {
       const i = batch[d.index];
+      if (i === undefined) continue;
       results[i] = d.embedding;
-      await setCachedEmbedding(EMBEDDING_MODEL, texts[i], d.embedding);
+      await setCachedEmbedding(EMBEDDING_MODEL, texts[i] ?? '', d.embedding);
     }
   }
-  return results;
+
+  return results.map((r, i) => {
+    if (!r) throw new Error(`Missing embedding for input ${i}`);
+    return r;
+  });
 }

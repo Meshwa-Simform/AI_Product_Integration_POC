@@ -21,18 +21,29 @@ POC for the "AI Product Integration" goal. Demonstrates RAG using OpenAI (chat +
 
 `npm run generate-mock-data` uses `@faker-js/faker` (seeded, `QA_COUNT` default 10k) to paraphrase each curated seed (persona prefixes, suffixes, lowercase, typos) so `referenceAnswer`/`source` still apply, plus ~10% out-of-scope / prompt-injection questions that must be refused.
 
+## Development
+
+TypeScript (strict, ESM/NodeNext), run directly with `tsx` — no build step. Requires Node 22+.
+
+- `npm run typecheck` — `tsc` (strict, `noUncheckedIndexedAccess`, no emit)
+- `npm run lint` — ESLint with `typescript-eslint` strict type-checked rules
+- `npm run format` / `npm run format:check` — Prettier
+- `npm run check` — all three; run before committing
+
 ## Structure
 
-- `scripts/generateMockData.js` — generates 10k grounded Q&A pairs via `@faker-js/faker`.
-- `scripts/evaluate.js` — prompt/model/temperature evaluation harness.
-- `src/lib/openaiClient.js` — OpenAI client init (SDK retries disabled) and model config.
-- `src/lib/pineconeClient.js` — Pinecone client + index init (waits until ready, validates dimension).
-- `src/lib/embeddings.js` — batched, cached embedding generation.
-- `src/lib/embeddingCache.js` — model-keyed local cache, written atomically once per run.
-- `src/lib/retry.js` — exponential backoff with jitter, `Retry-After`, max delay; retries 429/5xx/network errors (OpenAI + Pinecone), not `insufficient_quota`.
-- `src/lib/auditLog.js` — daily `logs/audit-YYYY-MM-DD.jsonl` (usage, cost, retries/errors, cache hits, moderation violations) with per-user IDs, PII redaction, `LOG_RETENTION_DAYS` pruning, and per-user daily spend.
-- `src/ingest.js` — chunk documents, embed, upsert to Pinecone.
-- `src/query.js` — budget check, input/output moderation, similarity search with score threshold, token-budgeted context, few-shot + injection-hardened system prompt, JSON-schema structured output, `max_tokens` and `finish_reason` handling.
+- `src/types.ts` — shared types (`QaPair`, `AnswerResult`, `ChunkMetadata`, ...).
+
+- `scripts/generateMockData.ts` — generates 10k grounded Q&A pairs via `@faker-js/faker`.
+- `scripts/evaluate.ts` — prompt/model/temperature evaluation harness.
+- `src/lib/openaiClient.ts` — OpenAI client init (SDK retries disabled) and model config.
+- `src/lib/pineconeClient.ts` — Pinecone client + index init (waits until ready, validates dimension).
+- `src/lib/embeddings.ts` — batched, cached embedding generation.
+- `src/lib/embeddingCache.ts` — model-keyed local cache, written atomically once per run.
+- `src/lib/retry.ts` — exponential backoff with jitter, `Retry-After`, max delay; retries 429/5xx/network errors (OpenAI + Pinecone), not `insufficient_quota`.
+- `src/lib/auditLog.ts` — daily `logs/audit-YYYY-MM-DD.jsonl` (usage, cost, retries/errors, cache hits, moderation violations) with per-user IDs, PII redaction, `LOG_RETENTION_DAYS` pruning, and per-user daily spend.
+- `src/ingest.ts` — chunk documents, embed, upsert to Pinecone.
+- `src/query.ts` — budget check, input/output moderation, similarity search with score threshold, token-budgeted context, few-shot + injection-hardened system prompt, JSON-schema structured output, `max_tokens` and `finish_reason` handling.
 
 ## Learning areas covered
 

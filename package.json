@@ -4,10 +4,15 @@
   "description": "G3 POC: RAG-based Knowledge Base Q&A using OpenAI + Pinecone",
   "type": "module",
   "scripts": {
-    "generate-mock-data": "node scripts/generateMockData.js",
-    "ingest": "node src/ingest.js",
-    "query": "node src/query.js",
-    "evaluate": "node scripts/evaluate.js"
+    "generate-mock-data": "tsx scripts/generateMockData.ts",
+    "ingest": "tsx src/ingest.ts",
+    "query": "tsx src/query.ts",
+    "evaluate": "tsx scripts/evaluate.ts",
+    "typecheck": "tsc",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run typecheck && npm run lint && npm run format:check"
   },
   "dependencies": {
     "@faker-js/faker": "^9.0.0",
@@ -15,5 +20,18 @@
     "dotenv": "^16.4.5",
     "js-tiktoken": "^1.0.21",
     "openai": "^4.60.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.3",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.70.1"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
