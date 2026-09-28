@@ -1,0 +1,7 @@
+node_modules/
+.env
+logs/*.jsonl
+data/embeddings-cache.json
+logs/eval-*.json
+data/qa-pairs-bulk.json
+data/embeddings-cache.json.tmp

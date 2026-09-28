@@ -1,0 +1,19 @@
+{
+  "name": "ai-product-integration-poc",
+  "version": "1.0.0",
+  "description": "G3 POC: RAG-based Knowledge Base Q&A using OpenAI + Pinecone",
+  "type": "module",
+  "scripts": {
+    "generate-mock-data": "node scripts/generateMockData.js",
+    "ingest": "node src/ingest.js",
+    "query": "node src/query.js",
+    "evaluate": "node scripts/evaluate.js"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^9.0.0",
+    "@pinecone-database/pinecone": "^3.0.0",
+    "dotenv": "^16.4.5",
+    "js-tiktoken": "^1.0.21",
+    "openai": "^4.60.0"
+  }
+}
