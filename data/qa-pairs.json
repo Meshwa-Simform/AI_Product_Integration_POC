@@ -1,0 +1,1507 @@
+[
+  {
+    "id": 1,
+    "complexity": "simple-fact",
+    "question": "What is the rate limit on the Free plan?",
+    "referenceAnswer": "10 requests/second, burst up to 20.",
+    "source": "doc-03-rate-limits-quotas.md"
+  },
+  {
+    "id": 2,
+    "complexity": "simple-fact",
+    "question": "How many API keys can be active per project at once?",
+    "referenceAnswer": "Up to 5 active keys per project.",
+    "source": "doc-02-authentication-api-keys.md"
+  },
+  {
+    "id": 3,
+    "complexity": "simple-fact",
+    "question": "What is the maximum payload size for an event?",
+    "referenceAnswer": "256KB per event payload.",
+    "source": "doc-08-frequently-asked-questions.md"
+  },
+  {
+    "id": 4,
+    "complexity": "simple-fact",
+    "question": "How long does a subscriber endpoint have to respond before it's considered a timeout?",
+    "referenceAnswer": "10 seconds.",
+    "source": "doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 5,
+    "complexity": "simple-fact",
+    "question": "What HTTP status code is returned when the monthly event quota is exceeded?",
+    "referenceAnswer": "402 Payment Required.",
+    "source": "doc-03-rate-limits-quotas.md"
+  },
+  {
+    "id": 6,
+    "complexity": "multi-step-reasoning",
+    "question": "My subscriber endpoint has been failing for 40 minutes since the first delivery attempt. Has it retried yet, and how many more attempts are left?",
+    "referenceAnswer": "Retries happen at 1min, 5min, 30min, 2h, 12h after the first attempt. At 40 minutes, the 1min, 5min, and 30min retries have already fired (4 attempts total including the original), so 2 more attempts remain (2h and 12h).",
+    "source": "doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 7,
+    "complexity": "multi-step-reasoning",
+    "question": "I'm on the Growth plan and just published 260,000 events this month. What happens to the next event I try to publish, and how do I fix it?",
+    "referenceAnswer": "Growth includes 250,000 events/month, so the 260,000th call already exceeded quota and would have returned 402 Payment Required; the next publish also fails the same way until you upgrade the plan, enable Growth overage billing (opt-in, off by default), or the billing cycle resets.",
+    "source": "doc-03-rate-limits-quotas.md, doc-04-billing-pricing-tiers.md"
+  },
+  {
+    "id": 8,
+    "complexity": "multi-step-reasoning",
+    "question": "I want to rotate my API key without downtime. What are the steps, and can I revoke the old key immediately after creating the new one?",
+    "referenceAnswer": "Create the new key, deploy it to your services, confirm traffic has moved over, then revoke the old key. You should not revoke immediately after creating the new key — wait until traffic has actually moved, otherwise services still using the old key will start failing.",
+    "source": "doc-02-authentication-api-keys.md"
+  },
+  {
+    "id": 9,
+    "complexity": "multi-step-reasoning",
+    "question": "If I get a 429 on my first request, then a 500 on the retry, what should my client do next?",
+    "referenceAnswer": "Both are retryable with exponential backoff: honor the Retry-After header for the 429, then continue backing off (doubling delay) for the subsequent 500, up to a maximum of 5 attempts total.",
+    "source": "doc-03-rate-limits-quotas.md, doc-05-error-handling-reference.md"
+  },
+  {
+    "id": 10,
+    "complexity": "edge-case",
+    "question": "I sent the same idempotencyKey twice but changed one field in the payload the second time. What happens?",
+    "referenceAnswer": "The second request returns 409 Conflict because the idempotency key matched but the payload differed from the original.",
+    "source": "doc-05-error-handling-reference.md"
+  },
+  {
+    "id": 11,
+    "complexity": "edge-case",
+    "question": "If I pause a subscriber, publish 5 events, then resume it a day later, will it receive those 5 events?",
+    "referenceAnswer": "No. Events published while a subscriber is paused are not queued for later delivery — only events published after the subscriber is resumed will be delivered.",
+    "source": "doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 12,
+    "complexity": "edge-case",
+    "question": "I revoked an API key while a request using it was already in flight and had returned 202. Will that event still get delivered?",
+    "referenceAnswer": "Yes — in-flight requests already accepted (202) complete delivery even after the key is revoked; only new requests using the revoked key are rejected.",
+    "source": "doc-02-authentication-api-keys.md"
+  },
+  {
+    "id": 13,
+    "complexity": "edge-case",
+    "question": "My payment failed 3 days ago. Are my events being delivered right now, and is my subscriber configuration still there?",
+    "referenceAnswer": "Yes to both — there's a 7-day grace period before suspension, so at day 3 events should still be delivering normally, and even after suspension the subscriber configuration is preserved (only new events get rejected with 403).",
+    "source": "doc-04-billing-pricing-tiers.md"
+  },
+  {
+    "id": 14,
+    "complexity": "edge-case",
+    "question": "Does publishing one event to 3 different subscribers count as 3 events against my quota?",
+    "referenceAnswer": "No, it counts as 1 event — quota is based on successful calls to POST /v1/events, not the number of subscribers that ultimately receive it.",
+    "source": "doc-08-frequently-asked-questions.md"
+  },
+  {
+    "id": 15,
+    "complexity": "edge-case",
+    "question": "Can I ask Loopwire what my company's refund policy is?",
+    "referenceAnswer": "This is not covered in the documentation — a grounded assistant should say it doesn't have enough information rather than inventing an answer.",
+    "source": "none (tests refusal on out-of-context questions)"
+  },
+  {
+    "id": 16,
+    "complexity": "simple-fact",
+    "question": "What ID prefix does a Loopwire delivery have?",
+    "referenceAnswer": "dlv_",
+    "source": "doc-01-getting-started-guide.md"
+  },
+  {
+    "id": 17,
+    "complexity": "multi-step-reasoning",
+    "question": "I publish one order.created event and three subscribers listen for it. How many deliveries are created and how many events count toward my quota?",
+    "referenceAnswer": "Three independent deliveries are created (one per subscriber), but it counts as a single event toward the quota.",
+    "source": "doc-01-getting-started-guide.md, doc-08-frequently-asked-questions.md"
+  },
+  {
+    "id": 18,
+    "complexity": "edge-case",
+    "question": "I created my project in the US region but now need EU data residency. Can I switch the project's region?",
+    "referenceAnswer": "No. A project's region is chosen at creation and can't be changed. EU projects are available only on the Scale plan, so you'd create a new EU project.",
+    "source": "doc-01-getting-started-guide.md"
+  },
+  {
+    "id": 19,
+    "complexity": "simple-fact",
+    "question": "Is 'order-created' a valid Loopwire event type?",
+    "referenceAnswer": "No. Event types must be lowercase and dot-separated (resource.action, e.g. order.created). 'order-created' is rejected with 400 Bad Request.",
+    "source": "doc-01-getting-started-guide.md"
+  },
+  {
+    "id": 20,
+    "complexity": "simple-fact",
+    "question": "Which roles can create or revoke API keys?",
+    "referenceAnswer": "Only Owners and Admins.",
+    "source": "doc-02-authentication-api-keys.md"
+  },
+  {
+    "id": 21,
+    "complexity": "edge-case",
+    "question": "I already have 5 active API keys in my project and try to create another. What happens?",
+    "referenceAnswer": "Creating the sixth key fails with 400 Bad Request. You must revoke an unused key first.",
+    "source": "doc-02-authentication-api-keys.md"
+  },
+  {
+    "id": 22,
+    "complexity": "multi-step-reasoning",
+    "question": "A key scoped to invoice.paid is used to publish an order.created event. What status comes back, and how would I give that service permission for both types?",
+    "referenceAnswer": "403 Forbidden. Scopes are fixed at creation, so create a new key with the needed scope (or an unscoped key) and rotate to it.",
+    "source": "doc-02-authentication-api-keys.md"
+  },
+  {
+    "id": 23,
+    "complexity": "edge-case",
+    "question": "Can I reactivate an API key I revoked by mistake?",
+    "referenceAnswer": "No. Revocation can't be undone and a revoked key can't be reactivated. Create a new key instead.",
+    "source": "doc-02-authentication-api-keys.md"
+  },
+  {
+    "id": 24,
+    "complexity": "simple-fact",
+    "question": "How many events can a single batch publish request contain?",
+    "referenceAnswer": "Up to 100 events, with a 1MB total body.",
+    "source": "doc-03-rate-limits-quotas.md"
+  },
+  {
+    "id": 25,
+    "complexity": "multi-step-reasoning",
+    "question": "On the Free plan, if I send 10 batch requests per second with 100 events each, will I hit the rate limit, and how long will my monthly quota last?",
+    "referenceAnswer": "No 429s. Each batch counts as 1 request, so 10 req/s is within the Free limit. But each event counts toward the quota, so 1,000 events/second uses up the 10,000-event quota in about 10 seconds.",
+    "source": "doc-03-rate-limits-quotas.md"
+  },
+  {
+    "id": 26,
+    "complexity": "edge-case",
+    "question": "Does creating more API keys in the same project raise my rate limit?",
+    "referenceAnswer": "No. Rate limits are applied per project, not per API key.",
+    "source": "doc-03-rate-limits-quotas.md"
+  },
+  {
+    "id": 27,
+    "complexity": "simple-fact",
+    "question": "Which response header tells me how many rate limit tokens I have left?",
+    "referenceAnswer": "X-RateLimit-Remaining.",
+    "source": "doc-03-rate-limits-quotas.md"
+  },
+  {
+    "id": 28,
+    "complexity": "simple-fact",
+    "question": "Is overage billing turned on by default on the Growth plan?",
+    "referenceAnswer": "No. Growth overage is opt-in and off by default. It's enabled by an Owner under Billing > Plan > Overage.",
+    "source": "doc-04-billing-pricing-tiers.md"
+  },
+  {
+    "id": 29,
+    "complexity": "multi-step-reasoning",
+    "question": "How much would a Scale-plan project pay for a month in which it published 3,500,000 events?",
+    "referenceAnswer": "$649: the $499 base plus 1,500,000 overage events at $0.10 per 1,000 ($150).",
+    "source": "doc-04-billing-pricing-tiers.md"
+  },
+  {
+    "id": 30,
+    "complexity": "edge-case",
+    "question": "My project was suspended for non-payment and I just paid. Will the events that were rejected during the suspension be replayed?",
+    "referenceAnswer": "No. The suspension lifts within a few minutes and publishing resumes, but events rejected during the suspension aren't replayed.",
+    "source": "doc-04-billing-pricing-tiers.md"
+  },
+  {
+    "id": 31,
+    "complexity": "simple-fact",
+    "question": "Which role can change plans and payment methods?",
+    "referenceAnswer": "Only the Owner role.",
+    "source": "doc-04-billing-pricing-tiers.md"
+  },
+  {
+    "id": 32,
+    "complexity": "simple-fact",
+    "question": "What error code is returned when an event payload is over 256KB?",
+    "referenceAnswer": "400 with error code payload_too_large.",
+    "source": "doc-05-error-handling-reference.md"
+  },
+  {
+    "id": 33,
+    "complexity": "multi-step-reasoning",
+    "question": "My publish request timed out on the network and I don't know if Loopwire received it. How do I retry safely without creating a duplicate event?",
+    "referenceAnswer": "Retry with the same idempotencyKey and the identical payload. If the first request was accepted within the last 24 hours, Loopwire returns the original eventId without publishing again.",
+    "source": "doc-05-error-handling-reference.md"
+  },
+  {
+    "id": 34,
+    "complexity": "edge-case",
+    "question": "My subscriber endpoint returns a 301 redirect. Does Loopwire count that as a successful delivery?",
+    "referenceAnswer": "No. Loopwire doesn't follow redirects, and any non-2xx response, including 3xx, is a delivery failure that is retried.",
+    "source": "doc-05-error-handling-reference.md, doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 35,
+    "complexity": "edge-case",
+    "question": "A publish was rejected with 400 because of a bad field. Can I reuse the same idempotencyKey after fixing it?",
+    "referenceAnswer": "Yes. Requests rejected with a 4xx don't record the idempotency key, so the corrected request can reuse it.",
+    "source": "doc-05-error-handling-reference.md"
+  },
+  {
+    "id": 36,
+    "complexity": "simple-fact",
+    "question": "What prefix do Loopwire signing secrets have?",
+    "referenceAnswer": "whsec_",
+    "source": "doc-06-security-best-practices.md"
+  },
+  {
+    "id": 37,
+    "complexity": "multi-step-reasoning",
+    "question": "I rotated my subscriber's signing secret 10 hours ago but haven't deployed the new one yet. Will signature verification with the old secret still pass?",
+    "referenceAnswer": "Yes. The old secret stays valid for 24 hours after rotation, and Loopwire-Signature contains two comma-separated signatures (new first). Verification that accepts any of them passes with the old secret until the 24-hour window ends.",
+    "source": "doc-06-security-best-practices.md"
+  },
+  {
+    "id": 38,
+    "complexity": "edge-case",
+    "question": "Why does my signature check fail when I verify against JSON.stringify(req.body)?",
+    "referenceAnswer": "The signature is computed over the raw request body bytes. Re-serialized JSON rarely matches them exactly, so verify against the raw body.",
+    "source": "doc-06-security-best-practices.md"
+  },
+  {
+    "id": 39,
+    "complexity": "simple-fact",
+    "question": "How old can a delivery's Loopwire-Timestamp be before the security guide recommends rejecting it?",
+    "referenceAnswer": "More than 5 minutes older than your server clock.",
+    "source": "doc-06-security-best-practices.md"
+  },
+  {
+    "id": 40,
+    "complexity": "simple-fact",
+    "question": "What delivery status does an event get for a subscriber that was paused when the event was published?",
+    "referenceAnswer": "skipped",
+    "source": "doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 41,
+    "complexity": "multi-step-reasoning",
+    "question": "What is the value of Loopwire-Delivery-Attempt on the retry that happens 2 hours after the first attempt?",
+    "referenceAnswer": "5. The original is attempt 1, then the retries at 1min, 5min, 30min, and 2h are attempts 2, 3, 4, and 5.",
+    "source": "doc-07-webhooks-overview.md, doc-05-error-handling-reference.md"
+  },
+  {
+    "id": 42,
+    "complexity": "edge-case",
+    "question": "I paused a subscriber while some of its deliveries were in retrying status. What happens to those scheduled retries?",
+    "referenceAnswer": "They are held, not cancelled; their retry schedule continues after the subscriber is resumed.",
+    "source": "doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 43,
+    "complexity": "edge-case",
+    "question": "Can I register http://localhost:3000/webhooks as a subscriber URL?",
+    "referenceAnswer": "No. http:// URLs, private IPs, and localhost are rejected with 400. Use the CLI's loopwire listen --forward-to for local testing.",
+    "source": "doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 44,
+    "complexity": "simple-fact",
+    "question": "Is Loopwire delivery exactly-once?",
+    "referenceAnswer": "No. Delivery is at-least-once, so deduplicate using Loopwire-Event-Id.",
+    "source": "doc-08-frequently-asked-questions.md"
+  },
+  {
+    "id": 45,
+    "complexity": "simple-fact",
+    "question": "What support is included with the Growth plan?",
+    "referenceAnswer": "Email support at support@loopwire.dev, with a first response within 1 business day.",
+    "source": "doc-08-frequently-asked-questions.md"
+  },
+  {
+    "id": 46,
+    "complexity": "multi-step-reasoning",
+    "question": "My endpoint was down for one hour. Which retries will succeed once it's back, assuming no other issues?",
+    "referenceAnswer": "For events whose first attempt fell in the outage, the 1min, 5min, and 30min retries fail while the endpoint is down. The 2h and 12h retries happen after it recovers, so the 2-hour retry should succeed. Anything that used all 6 attempts appears in Failed Deliveries for manual redelivery.",
+    "source": "doc-08-frequently-asked-questions.md"
+  },
+  {
+    "id": 47,
+    "complexity": "edge-case",
+    "question": "Do manual redeliveries of old events count toward my monthly quota?",
+    "referenceAnswer": "No. Only the original successful publish counts. Automatic retries and manual redeliveries don't.",
+    "source": "doc-08-frequently-asked-questions.md"
+  },
+  {
+    "id": 48,
+    "complexity": "simple-fact",
+    "question": "What status code does POST /v1/events return when an event is accepted?",
+    "referenceAnswer": "202 Accepted, with an eventId.",
+    "source": "doc-09-events-api-reference.md"
+  },
+  {
+    "id": 49,
+    "complexity": "simple-fact",
+    "question": "What happens if I fetch an event that is older than my plan's retention window?",
+    "referenceAnswer": "GET /v1/events/{eventId} returns 404 Not Found because the payload has been permanently deleted.",
+    "source": "doc-09-events-api-reference.md"
+  },
+  {
+    "id": 50,
+    "complexity": "multi-step-reasoning",
+    "question": "I published an event while all of its matching subscribers were paused. Did it use quota, and what status do the deliveries have?",
+    "referenceAnswer": "Yes, it counts toward quota once it was accepted with 202, but the deliveries are recorded as skipped and never attempted.",
+    "source": "doc-09-events-api-reference.md"
+  },
+  {
+    "id": 51,
+    "complexity": "edge-case",
+    "question": "Can I set my own eventId when publishing an event?",
+    "referenceAnswer": "No, eventIds are generated by Loopwire. Use idempotencyKey to correlate with your own internal IDs.",
+    "source": "doc-09-events-api-reference.md"
+  },
+  {
+    "id": 52,
+    "complexity": "simple-fact",
+    "question": "How many subscribers can a Growth plan project have?",
+    "referenceAnswer": "50 subscribers per project.",
+    "source": "doc-10-subscribers-api-reference.md"
+  },
+  {
+    "id": 53,
+    "complexity": "simple-fact",
+    "question": "When is a subscriber's signing secret returned in full by the API?",
+    "referenceAnswer": "Only in the 201 response to POST /v1/subscribers when the subscriber is created. Afterwards Admins and Owners can re-view it in the dashboard.",
+    "source": "doc-10-subscribers-api-reference.md"
+  },
+  {
+    "id": 54,
+    "complexity": "multi-step-reasoning",
+    "question": "I'm on the Free plan with 5 subscribers, one of them paused. Can I add another subscriber, and what if I delete the paused one first?",
+    "referenceAnswer": "No, paused subscribers still count toward the 5-subscriber Free limit, so creating a sixth returns 403 subscriber_limit_reached. Deleting the paused one frees a slot because deleted subscribers don't count.",
+    "source": "doc-10-subscribers-api-reference.md"
+  },
+  {
+    "id": 55,
+    "complexity": "edge-case",
+    "question": "My subscriber endpoint returns a 301 redirect to a new URL. Will Loopwire follow it?",
+    "referenceAnswer": "No. Loopwire doesn't follow redirects, so a 301/302 is treated as a non-2xx delivery failure. Update the subscriber URL instead.",
+    "source": "doc-10-subscribers-api-reference.md, doc-17-failed-deliveries-view.md"
+  },
+  {
+    "id": 56,
+    "complexity": "simple-fact",
+    "question": "What is the maximum length of an event type name?",
+    "referenceAnswer": "64 characters.",
+    "source": "doc-11-event-types-and-naming.md"
+  },
+  {
+    "id": 57,
+    "complexity": "simple-fact",
+    "question": "Is 'Order.Created' a valid event type?",
+    "referenceAnswer": "No, uppercase letters aren't allowed. Types must be lowercase dot-separated segments; it would be rejected with 400 invalid_event_type.",
+    "source": "doc-11-event-types-and-naming.md"
+  },
+  {
+    "id": 58,
+    "complexity": "multi-step-reasoning",
+    "question": "I need to change the payload of user.updated in a breaking way. What's the recommended approach?",
+    "referenceAnswer": "Publish a new versioned type such as user.v2.updated alongside the old one, add it to subscribers' filters, migrate them, then stop publishing the old type. Don't change user.updated's shape in place.",
+    "source": "doc-11-event-types-and-naming.md"
+  },
+  {
+    "id": 59,
+    "complexity": "edge-case",
+    "question": "Can I publish an event with the type loopwire.custom_event?",
+    "referenceAnswer": "No. The loopwire. prefix is reserved for the platform, so the publish returns 400 with code reserved_event_type.",
+    "source": "doc-11-event-types-and-naming.md"
+  },
+  {
+    "id": 60,
+    "complexity": "simple-fact",
+    "question": "Does the subscriber filter order.* match order.item.added?",
+    "referenceAnswer": "Yes. A trailing * matches one or more remaining segments.",
+    "source": "doc-12-event-filtering-and-routing.md"
+  },
+  {
+    "id": 61,
+    "complexity": "simple-fact",
+    "question": "Can I use a wildcard like *.created in a subscriber's eventTypes filter?",
+    "referenceAnswer": "No. * is only allowed as the final segment; mid-pattern wildcards are rejected with 400.",
+    "source": "doc-12-event-filtering-and-routing.md"
+  },
+  {
+    "id": 62,
+    "complexity": "multi-step-reasoning",
+    "question": "I added order.shipped to a subscriber's filter today. Will it receive the order.shipped events published yesterday, and if not how do I send them?",
+    "referenceAnswer": "No, filter changes only affect events published after the change. To send yesterday's events, run a replay for that subscriber covering that time range.",
+    "source": "doc-12-event-filtering-and-routing.md, doc-16-redelivery-and-replay.md"
+  },
+  {
+    "id": 63,
+    "complexity": "edge-case",
+    "question": "If no subscriber matches an event I publish, is it rejected, and does it use quota?",
+    "referenceAnswer": "It isn't rejected: it's accepted with 202, stored, and counted toward quota. It just has zero deliveries.",
+    "source": "doc-12-event-filtering-and-routing.md"
+  },
+  {
+    "id": 64,
+    "complexity": "simple-fact",
+    "question": "Which JSON Schema draft does Loopwire payload validation support?",
+    "referenceAnswer": "JSON Schema draft 2020-12.",
+    "source": "doc-13-payload-schema-validation.md"
+  },
+  {
+    "id": 65,
+    "complexity": "simple-fact",
+    "question": "What happens to an invalid payload when the event type's schema mode is warn?",
+    "referenceAnswer": "The event is accepted (202) and delivered normally, but tagged schema_warning in the Event Log with the list of violations.",
+    "source": "doc-13-payload-schema-validation.md"
+  },
+  {
+    "id": 66,
+    "complexity": "multi-step-reasoning",
+    "question": "What's the safe way to roll out a new schema on a busy event type without dropping production events?",
+    "referenceAnswer": "Register it in warn mode, watch the Event Log for schema_warning events, fix the publishers sending invalid payloads, then switch to enforce. Jumping straight to enforce causes 400s, which clients won't retry.",
+    "source": "doc-13-payload-schema-validation.md"
+  },
+  {
+    "id": 67,
+    "complexity": "edge-case",
+    "question": "A 300KB payload is sent for an event type with an enforce schema. What error code comes back?",
+    "referenceAnswer": "400 with code payload_too_large, because the 256KB size limit is checked before schema validation.",
+    "source": "doc-13-payload-schema-validation.md"
+  },
+  {
+    "id": 68,
+    "complexity": "simple-fact",
+    "question": "How many rows can a single Event Log CSV export contain?",
+    "referenceAnswer": "Up to 10,000 rows, and payloads are not included.",
+    "source": "doc-14-event-log-and-search.md"
+  },
+  {
+    "id": 69,
+    "complexity": "simple-fact",
+    "question": "Which plans can search inside event payloads in the Event Log?",
+    "referenceAnswer": "Growth and Scale. Payload search covers at most the last 7 days of events per query.",
+    "source": "doc-14-event-log-and-search.md"
+  },
+  {
+    "id": 70,
+    "complexity": "multi-step-reasoning",
+    "question": "A customer says they never got an event, and it doesn't appear in the Event Log at all. What does that mean and where should I look?",
+    "referenceAnswer": "The publish never succeeded, since rejected publishes aren't stored. Check your client logs for 400, 401, 402, 403 or 429 responses.",
+    "source": "doc-14-event-log-and-search.md"
+  },
+  {
+    "id": 71,
+    "complexity": "edge-case",
+    "question": "Can a Viewer redeliver an event from the Event Log?",
+    "referenceAnswer": "No. Viewers can browse the log and see payloads, but redelivery requires the Developer role or above.",
+    "source": "doc-14-event-log-and-search.md"
+  },
+  {
+    "id": 72,
+    "complexity": "simple-fact",
+    "question": "What are the possible delivery statuses?",
+    "referenceAnswer": "pending, delivered, retrying, failed, and skipped.",
+    "source": "doc-15-delivery-lifecycle-and-statuses.md"
+  },
+  {
+    "id": 73,
+    "complexity": "simple-fact",
+    "question": "What value does the Loopwire-Delivery-Attempt header have on the final retry?",
+    "referenceAnswer": "6. It's the original attempt plus 5 retries, and the last one is sent 12 hours after the first attempt.",
+    "source": "doc-15-delivery-lifecycle-and-statuses.md"
+  },
+  {
+    "id": 74,
+    "complexity": "multi-step-reasoning",
+    "question": "My endpoint processed a delivery but took 12 seconds to return 200. What will Loopwire do, and how should my endpoint handle it?",
+    "referenceAnswer": "Anything slower than 10 seconds counts as a timeout failure, so Loopwire retries with the same Loopwire-Event-Id. The endpoint should deduplicate on Loopwire-Event-Id and ideally respond 2xx right away, then process asynchronously.",
+    "source": "doc-15-delivery-lifecycle-and-statuses.md, doc-17-failed-deliveries-view.md"
+  },
+  {
+    "id": 75,
+    "complexity": "edge-case",
+    "question": "Does returning 410 Gone from my endpoint automatically unsubscribe or pause it?",
+    "referenceAnswer": "No. A 410 is treated like any other failure and doesn't pause or delete the subscriber.",
+    "source": "doc-15-delivery-lifecycle-and-statuses.md"
+  },
+  {
+    "id": 76,
+    "complexity": "simple-fact",
+    "question": "What is the maximum number of events in a single replay job?",
+    "referenceAnswer": "10,000 events. Larger ranges return 400 replay_too_large.",
+    "source": "doc-16-redelivery-and-replay.md"
+  },
+  {
+    "id": 77,
+    "complexity": "simple-fact",
+    "question": "Does redelivering an event count against my monthly quota?",
+    "referenceAnswer": "No. Redeliveries and replays don't count toward the monthly event quota.",
+    "source": "doc-16-redelivery-and-replay.md"
+  },
+  {
+    "id": 78,
+    "complexity": "multi-step-reasoning",
+    "question": "My subscriber was paused for 2 hours and missed events. How can I get those events delivered?",
+    "referenceAnswer": "Events published while it was paused were skipped and aren't delivered on resume. Resume the subscriber, then replay the paused time window to it (within the retention window). Replaying while it's still paused returns 400 subscriber_paused.",
+    "source": "doc-16-redelivery-and-replay.md, doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 79,
+    "complexity": "edge-case",
+    "question": "I've hit 402 Payment Required on the Free plan. Can I still redeliver past events?",
+    "referenceAnswer": "Yes. Redelivery and replay don't count toward quota, so they still work after hitting 402. A suspended project can't redeliver, though (403).",
+    "source": "doc-16-redelivery-and-replay.md"
+  },
+  {
+    "id": 80,
+    "complexity": "simple-fact",
+    "question": "How many failed deliveries can be redelivered in a single bulk action from the Failed Deliveries view?",
+    "referenceAnswer": "Up to 500 deliveries.",
+    "source": "doc-17-failed-deliveries-view.md"
+  },
+  {
+    "id": 81,
+    "complexity": "simple-fact",
+    "question": "What failure reason is shown when an endpoint doesn't respond within 10 seconds?",
+    "referenceAnswer": "timeout.",
+    "source": "doc-17-failed-deliveries-view.md"
+  },
+  {
+    "id": 82,
+    "complexity": "multi-step-reasoning",
+    "question": "All my deliveries to one endpoint are failing with connection_refused. What's the likely cause and how do I recover the missed events?",
+    "referenceAnswer": "A firewall is likely blocking Loopwire: allow the delivery IP ranges from https://api.loopwire.dev/v1/ips. Confirm the fix with a test event, then bulk-redeliver the failed deliveries (up to 500 per action) or replay the time range.",
+    "source": "doc-17-failed-deliveries-view.md"
+  },
+  {
+    "id": 83,
+    "complexity": "edge-case",
+    "question": "Do skipped deliveries from a paused subscriber appear in the Failed Deliveries view?",
+    "referenceAnswer": "No. Skipped deliveries were never attempted, so they never become failed and don't appear there.",
+    "source": "doc-17-failed-deliveries-view.md"
+  },
+  {
+    "id": 84,
+    "complexity": "simple-fact",
+    "question": "How many events can be sent in one batch publish request?",
+    "referenceAnswer": "Up to 100 events, with a 1MB total body.",
+    "source": "doc-18-batch-publishing.md"
+  },
+  {
+    "id": 85,
+    "complexity": "simple-fact",
+    "question": "What status code does the batch endpoint return when some events are rejected and others accepted?",
+    "referenceAnswer": "207 Multi-Status, with a result for each event.",
+    "source": "doc-18-batch-publishing.md"
+  },
+  {
+    "id": 86,
+    "complexity": "multi-step-reasoning",
+    "question": "On the Free plan, how many events per second can I publish using batches before hitting the rate limit, and how much quota does a full batch use?",
+    "referenceAnswer": "Free allows 10 requests/second and each batch counts as 1 request, so up to 1,000 events/second (10 batches of 100). Each accepted event still counts as 1 event of quota, so a full batch uses 100.",
+    "source": "doc-18-batch-publishing.md, doc-03-rate-limits-quotas.md"
+  },
+  {
+    "id": 87,
+    "complexity": "edge-case",
+    "question": "My batch request timed out. Is it safe to resend the same batch?",
+    "referenceAnswer": "Yes, if each event has an idempotencyKey. Already-accepted events come back with their original eventId and aren't counted again.",
+    "source": "doc-18-batch-publishing.md"
+  },
+  {
+    "id": 88,
+    "complexity": "simple-fact",
+    "question": "What is the rate limit for the Usage API?",
+    "referenceAnswer": "5 requests/second per project. It doesn't count toward the /v1/events rate limit.",
+    "source": "doc-19-usage-api-reference.md"
+  },
+  {
+    "id": 89,
+    "complexity": "simple-fact",
+    "question": "At what quota thresholds are usage alert emails sent by default?",
+    "referenceAnswer": "80% and 100% of the included quota.",
+    "source": "doc-19-usage-api-reference.md"
+  },
+  {
+    "id": 90,
+    "complexity": "multi-step-reasoning",
+    "question": "GET /v1/usage shows events.remaining: 50 but my publish got 402. Why could that happen?",
+    "referenceAnswer": "Usage figures update within about 60 seconds, so they can lag. The authoritative quota check happens at publish time, and it returned 402 because the quota was already exhausted.",
+    "source": "doc-19-usage-api-reference.md"
+  },
+  {
+    "id": 91,
+    "complexity": "edge-case",
+    "question": "Why does /v1/usage show events.used: 0 even though I've published many events?",
+    "referenceAnswer": "You're probably calling it with a lw_test_ key. Test-mode usage is separate and always shows events.used: 0 because test events don't count toward quota.",
+    "source": "doc-19-usage-api-reference.md"
+  },
+  {
+    "id": 92,
+    "complexity": "simple-fact",
+    "question": "What is the npm package name of the official Node.js SDK and which Node version does it require?",
+    "referenceAnswer": "@loopwire/node, which requires Node.js 18 or later.",
+    "source": "doc-20-node-sdk.md"
+  },
+  {
+    "id": 93,
+    "complexity": "multi-step-reasoning",
+    "question": "Using the Node SDK, I call publishBatch with 30 events and 2 of them are invalid. Does the call throw, and how many events count toward my quota and rate limit?",
+    "referenceAnswer": "It does not throw; the API returns 207 Multi-Status and you must inspect result.results. The 28 accepted events each count toward quota, and the whole batch counts as one request toward the rate limit.",
+    "source": "doc-20-node-sdk.md"
+  },
+  {
+    "id": 94,
+    "complexity": "edge-case",
+    "question": "Can I set maxAttempts to 10 in the Node SDK to retry more aggressively?",
+    "referenceAnswer": "No. maxAttempts defaults to 5 and cannot be set above 5 total attempts.",
+    "source": "doc-20-node-sdk.md"
+  },
+  {
+    "id": 95,
+    "complexity": "edge-case",
+    "question": "My Express handler passes the parsed JSON body to verifySignature() and it always returns false. Why?",
+    "referenceAnswer": "verifySignature() needs the raw body (Buffer or string); re-serializing parsed JSON changes the bytes, so it returns false. Use express.raw({ type: 'application/json' }) on the route.",
+    "source": "doc-20-node-sdk.md"
+  },
+  {
+    "id": 96,
+    "complexity": "simple-fact",
+    "question": "What is the minimum Python version supported by the loopwire Python SDK?",
+    "referenceAnswer": "Python 3.9 or later.",
+    "source": "doc-21-python-sdk.md"
+  },
+  {
+    "id": 97,
+    "complexity": "simple-fact",
+    "question": "Which exception does the Python SDK raise when the monthly event quota is exceeded?",
+    "referenceAnswer": "loopwire.QuotaExceededError (HTTP 402).",
+    "source": "doc-21-python-sdk.md"
+  },
+  {
+    "id": 98,
+    "complexity": "multi-step-reasoning",
+    "question": "I'm on the Growth plan and use AsyncLoopwire with asyncio.gather to publish 5,000 events at once. What is likely to happen and what should I do instead?",
+    "referenceAnswer": "The SDK doesn't throttle concurrency, so you'll exceed the Growth rate limit of 50 requests/second and get 429s (retried up to 5 attempts, then RateLimitError). Use publish_batch() (up to 100 events per request) or limit concurrency with an asyncio.Semaphore.",
+    "source": "doc-21-python-sdk.md, doc-03-rate-limits-quotas.md"
+  },
+  {
+    "id": 99,
+    "complexity": "edge-case",
+    "question": "In FastAPI, can I verify a Loopwire signature using json.dumps of the parsed request JSON?",
+    "referenceAnswer": "No. You must verify against the raw bytes from await request.body(); never verify against re-serialized JSON.",
+    "source": "doc-21-python-sdk.md"
+  },
+  {
+    "id": 100,
+    "complexity": "simple-fact",
+    "question": "What is the import path of the Go SDK and the minimum Go version?",
+    "referenceAnswer": "github.com/loopwire/loopwire-go, requiring Go 1.21 or later.",
+    "source": "doc-22-go-sdk.md"
+  },
+  {
+    "id": 101,
+    "complexity": "multi-step-reasoning",
+    "question": "In the Go SDK, what happens if my context is cancelled while Publish is waiting to retry after a 429?",
+    "referenceAnswer": "Publish returns ctx.Err() immediately; the SDK respects context cancellation even during backoff sleeps.",
+    "source": "doc-22-go-sdk.md"
+  },
+  {
+    "id": 102,
+    "complexity": "edge-case",
+    "question": "If I pass WithMaxAttempts(8) to the Go client, how many attempts will it make?",
+    "referenceAnswer": "At most 5 — values above 5 are clamped to 5.",
+    "source": "doc-22-go-sdk.md"
+  },
+  {
+    "id": 103,
+    "complexity": "edge-case",
+    "question": "Does PublishBatch in the Go SDK return an error when the API responds with 207 Multi-Status?",
+    "referenceAnswer": "No. err is nil and the individual failures are reported in res.Results.",
+    "source": "doc-22-go-sdk.md"
+  },
+  {
+    "id": 104,
+    "complexity": "simple-fact",
+    "question": "Which command forwards test-inbox events to a local server?",
+    "referenceAnswer": "loopwire listen --forward-to <local URL>, e.g. loopwire listen --forward-to http://localhost:3000/webhooks.",
+    "source": "doc-23-cli-reference.md"
+  },
+  {
+    "id": 105,
+    "complexity": "edge-case",
+    "question": "Can loopwire listen forward live events published with an lw_live_ key to my laptop?",
+    "referenceAnswer": "No. listen only forwards test-mode events (published with lw_test_ keys); it never forwards live events.",
+    "source": "doc-23-cli-reference.md"
+  },
+  {
+    "id": 106,
+    "complexity": "multi-step-reasoning",
+    "question": "My local handler rejects every event forwarded by loopwire listen as having an invalid signature, even though I'm using my subscriber's signing secret. What's wrong?",
+    "referenceAnswer": "listen signs forwarded requests with a session signing secret printed when it starts; you must verify with that session secret, not the subscriber's secret.",
+    "source": "doc-23-cli-reference.md"
+  },
+  {
+    "id": 107,
+    "complexity": "simple-fact",
+    "question": "What exit code does the Loopwire CLI return for an authentication error?",
+    "referenceAnswer": "Exit code 3.",
+    "source": "doc-23-cli-reference.md"
+  },
+  {
+    "id": 108,
+    "complexity": "simple-fact",
+    "question": "What exactly does the Loopwire-Signature header contain?",
+    "referenceAnswer": "The hex-encoded HMAC-SHA256 of the raw request body, keyed with the subscriber's signing secret (whsec_...).",
+    "source": "doc-24-signature-verification-code-samples.md, doc-06-security-best-practices.md"
+  },
+  {
+    "id": 109,
+    "complexity": "multi-step-reasoning",
+    "question": "I rotated my signing secret an hour ago and now my verifier fails on some deliveries. It only checks the first value in Loopwire-Signature. What should it do?",
+    "referenceAnswer": "During the 24-hour rotation window the header contains two comma-separated signatures (new first). Split on commas and accept if any value matches using a constant-time comparison; also make sure the new secret has been deployed.",
+    "source": "doc-24-signature-verification-code-samples.md"
+  },
+  {
+    "id": 110,
+    "complexity": "edge-case",
+    "question": "Is Loopwire-Timestamp covered by the signature, so I can rely on it alone to prevent replay attacks?",
+    "referenceAnswer": "No. The signature covers only the body; the timestamp is not signed. Deduplicate on Loopwire-Event-Id / eventId for replay protection, optionally also rejecting stale timestamps.",
+    "source": "doc-24-signature-verification-code-samples.md"
+  },
+  {
+    "id": 111,
+    "complexity": "edge-case",
+    "question": "Why might my Node verifier crash intermittently when using crypto.timingSafeEqual?",
+    "referenceAnswer": "timingSafeEqual throws when the two buffers have different lengths; check lengths before comparing.",
+    "source": "doc-24-signature-verification-code-samples.md"
+  },
+  {
+    "id": 112,
+    "complexity": "simple-fact",
+    "question": "How many test events does the test inbox keep per project?",
+    "referenceAnswer": "The most recent 500 test events per project.",
+    "source": "doc-25-local-development-and-test-inbox.md"
+  },
+  {
+    "id": 113,
+    "complexity": "edge-case",
+    "question": "Can I get a 429 when load testing with an lw_test_ key?",
+    "referenceAnswer": "Yes. Test-mode events don't count against quota, but the same per-plan rate limits apply, so you can still receive 429 Too Many Requests.",
+    "source": "doc-25-local-development-and-test-inbox.md"
+  },
+  {
+    "id": 114,
+    "complexity": "multi-step-reasoning",
+    "question": "I'm on the Free plan and want separate dev, staging, and prod projects. Is that possible?",
+    "referenceAnswer": "No — the Free plan allows only 2 projects, so three environment projects require the Growth plan (10 projects) or Scale (unlimited).",
+    "source": "doc-25-local-development-and-test-inbox.md"
+  },
+  {
+    "id": 115,
+    "complexity": "edge-case",
+    "question": "Can I replay events I published in test mode into live mode once I go live?",
+    "referenceAnswer": "No. Test and live data are fully separated and test events are not replayable into live mode.",
+    "source": "doc-25-local-development-and-test-inbox.md"
+  },
+  {
+    "id": 116,
+    "complexity": "simple-fact",
+    "question": "What kind of API key should be used in CI pipelines?",
+    "referenceAnswer": "An lw_test_ key, ideally a dedicated one stored as a masked CI secret and exposed as LOOPWIRE_API_KEY.",
+    "source": "doc-26-ci-cd-integration.md"
+  },
+  {
+    "id": 117,
+    "complexity": "multi-step-reasoning",
+    "question": "Our deploy pipeline creates a new live key and revokes the old one in the same step, and some services start failing. Why, and what is the right process?",
+    "referenceAnswer": "Services that haven't picked up the new key keep using the revoked one and get 401 Unauthorized. Create the new key, update secrets and deploy, confirm traffic moved to the new key, then revoke the old one in a later step.",
+    "source": "doc-26-ci-cd-integration.md, doc-02-authentication-api-keys.md"
+  },
+  {
+    "id": 118,
+    "complexity": "edge-case",
+    "question": "Why do our Loopwire contract tests fail on pull requests from forks?",
+    "referenceAnswer": "Forked pull requests usually can't read repository secrets, so the Loopwire test key isn't available; gate those jobs on the secret being present.",
+    "source": "doc-26-ci-cd-integration.md"
+  },
+  {
+    "id": 119,
+    "complexity": "edge-case",
+    "question": "Is it a problem if our deploy script creates a new subscriber on every deploy?",
+    "referenceAnswer": "Yes. Each new subscriber gets a new signing secret and plan limits cap subscribers per project (Free 5, Growth 50, Scale 500); create or update subscribers idempotently instead.",
+    "source": "doc-26-ci-cd-integration.md"
+  },
+  {
+    "id": 120,
+    "complexity": "simple-fact",
+    "question": "When migrating, what does an event named OrderCreated become in Loopwire's naming format?",
+    "referenceAnswer": "order.created.",
+    "source": "doc-27-migrating-from-self-hosted-webhooks.md"
+  },
+  {
+    "id": 121,
+    "complexity": "multi-step-reasoning",
+    "question": "Our old webhook sender waited 60 seconds for customer endpoints and queued events for disabled endpoints. What changes after moving to Loopwire?",
+    "referenceAnswer": "Endpoints must respond with 2xx within 10 seconds or the delivery fails, and paused subscribers don't buffer events — events published while paused are skipped and not delivered on resume.",
+    "source": "doc-27-migrating-from-self-hosted-webhooks.md"
+  },
+  {
+    "id": 122,
+    "complexity": "edge-case",
+    "question": "Can I import customer endpoints that use plain http:// URLs as subscribers?",
+    "referenceAnswer": "No. Subscriber URLs must be HTTPS; non-HTTPS URLs are rejected.",
+    "source": "doc-27-migrating-from-self-hosted-webhooks.md"
+  },
+  {
+    "id": 123,
+    "complexity": "multi-step-reasoning",
+    "question": "During cutover, how do I avoid duplicate events if a publish is retried?",
+    "referenceAnswer": "Use idempotency keys derived from your internal event IDs; a duplicate with the same key and identical payload within 24 hours returns the original eventId instead of re-publishing.",
+    "source": "doc-27-migrating-from-self-hosted-webhooks.md"
+  },
+  {
+    "id": 124,
+    "complexity": "simple-fact",
+    "question": "What is the Terraform Registry source for the Loopwire provider?",
+    "referenceAnswer": "loopwire/loopwire.",
+    "source": "doc-28-terraform-provider.md"
+  },
+  {
+    "id": 125,
+    "complexity": "edge-case",
+    "question": "Can I terraform import an existing Loopwire API key and get its secret into state?",
+    "referenceAnswer": "No. Keys can be imported only for name and lifecycle management; the secret is empty because full keys are not retrievable after creation.",
+    "source": "doc-28-terraform-provider.md"
+  },
+  {
+    "id": 126,
+    "complexity": "multi-step-reasoning",
+    "question": "What happens if I change the region of a loopwire_project resource from us to eu?",
+    "referenceAnswer": "Region can't be changed after creation, so Terraform forces replacement, creating a brand-new empty project; eu is also only available on the Scale plan.",
+    "source": "doc-28-terraform-provider.md"
+  },
+  {
+    "id": 127,
+    "complexity": "multi-step-reasoning",
+    "question": "How do I rotate a loopwire_api_key with Terraform without downtime, and what limit should I watch?",
+    "referenceAnswer": "Use lifecycle create_before_destroy so the new key exists before the old one is revoked; you need a spare slot under the 5 active keys per project limit.",
+    "source": "doc-28-terraform-provider.md"
+  },
+  {
+    "id": 128,
+    "complexity": "simple-fact",
+    "question": "Where can I download the Loopwire OpenAPI spec and which OpenAPI version is it?",
+    "referenceAnswer": "At https://api.loopwire.dev/v1/openapi.json (or openapi.yaml); it is an OpenAPI 3.1 document and requires no API key.",
+    "source": "doc-29-openapi-spec-and-postman.md"
+  },
+  {
+    "id": 129,
+    "complexity": "multi-step-reasoning",
+    "question": "If I generate a Java client from the OpenAPI spec, will it retry 429 responses like the official SDKs?",
+    "referenceAnswer": "No. Generated clients lack the SDK behavior (automatic 429/500 retries with backoff up to 5 attempts honoring Retry-After, local validation, verifySignature); you must add it yourself or use an official SDK.",
+    "source": "doc-29-openapi-spec-and-postman.md"
+  },
+  {
+    "id": 130,
+    "complexity": "edge-case",
+    "question": "How can I test idempotency behavior with the Postman collection?",
+    "referenceAnswer": "Disable the pre-request script that generates a fresh idempotencyKey, send the same request twice to get the original eventId back, then change the payload to see 409 Conflict.",
+    "source": "doc-29-openapi-spec-and-postman.md"
+  },
+  {
+    "id": 131,
+    "complexity": "simple-fact",
+    "question": "How do I get the OpenAPI spec for an older API version?",
+    "referenceAnswer": "Add a version query parameter, e.g. https://api.loopwire.dev/v1/openapi.json?version=2025-06-01.",
+    "source": "doc-29-openapi-spec-and-postman.md"
+  },
+  {
+    "id": 132,
+    "complexity": "simple-fact",
+    "question": "What is the current Loopwire API version?",
+    "referenceAnswer": "2026-01-15.",
+    "source": "doc-30-api-versioning-and-changelog.md"
+  },
+  {
+    "id": 133,
+    "complexity": "multi-step-reasoning",
+    "question": "My project is pinned to 2024-09-01. When will it stop being supported, and what idempotency change will I hit when upgrading?",
+    "referenceAnswer": "2024-09-01 was deprecated in 2026-01-15 and sunsets on 2027-01-15. Since 2025-06-01, reusing an idempotency key with a different payload returns 409 Conflict instead of creating a new event.",
+    "source": "doc-30-api-versioning-and-changelog.md"
+  },
+  {
+    "id": 134,
+    "complexity": "edge-case",
+    "question": "I upgraded my project's pinned API version 4 days ago and want to roll back. Can I?",
+    "referenceAnswer": "No. Rollback is only available within 72 hours of the upgrade.",
+    "source": "doc-30-api-versioning-and-changelog.md"
+  },
+  {
+    "id": 135,
+    "complexity": "edge-case",
+    "question": "If I publish an event with Loopwire-Version 2026-01-15 but my project is pinned to 2025-06-01, which version's format do subscribers receive?",
+    "referenceAnswer": "The pinned version (2025-06-01); deliveries use the project's pinned version, not the publishing request's version.",
+    "source": "doc-30-api-versioning-and-changelog.md"
+  },
+  {
+    "id": 136,
+    "complexity": "simple-fact",
+    "question": "How many projects can I create on the Growth plan?",
+    "referenceAnswer": "Up to 10 projects per account on Growth.",
+    "source": "doc-31-projects-and-environments.md"
+  },
+  {
+    "id": 137,
+    "complexity": "multi-step-reasoning",
+    "question": "I'm on the Free plan and want separate dev, staging and prod projects. Is that possible, and what should I do instead?",
+    "referenceAnswer": "No — Free allows only 2 projects. Use lw_test_ keys for development and one project each for staging and production.",
+    "source": "doc-31-projects-and-environments.md"
+  },
+  {
+    "id": 138,
+    "complexity": "edge-case",
+    "question": "Do events sent with test keys count toward my per-second rate limit?",
+    "referenceAnswer": "Yes. Test events never count toward the monthly quota, but test requests do count toward the project's per-second rate limit.",
+    "source": "doc-31-projects-and-environments.md"
+  },
+  {
+    "id": 139,
+    "complexity": "simple-fact",
+    "question": "Can I restore a project after deleting it?",
+    "referenceAnswer": "No. Project deletion is irreversible; subscribers, signing secrets and the event log are permanently deleted and all keys are revoked.",
+    "source": "doc-31-projects-and-environments.md"
+  },
+  {
+    "id": 140,
+    "complexity": "simple-fact",
+    "question": "Which role is the only one allowed to manage billing?",
+    "referenceAnswer": "Only the Owner can manage billing, plan and payment method.",
+    "source": "doc-32-team-members-and-roles.md"
+  },
+  {
+    "id": 141,
+    "complexity": "multi-step-reasoning",
+    "question": "A developer who had access to our live API key just left. I removed them from the team. Is the key still safe to keep using?",
+    "referenceAnswer": "No. Removing a member does not revoke keys they created or saw — keys belong to the project. Revoke and rotate the key using the zero-downtime process (create new key, deploy, confirm traffic moved, then revoke the old one).",
+    "source": "doc-32-team-members-and-roles.md, doc-02-authentication-api-keys.md"
+  },
+  {
+    "id": 142,
+    "complexity": "edge-case",
+    "question": "On the Free plan I have the Owner, one member, and one pending invitation. Can I invite another person?",
+    "referenceAnswer": "No. Free allows 3 members and the limit counts the Owner, active members and pending invitations, so the seat limit is already reached.",
+    "source": "doc-32-team-members-and-roles.md"
+  },
+  {
+    "id": 143,
+    "complexity": "simple-fact",
+    "question": "How long does a team invitation link stay valid?",
+    "referenceAnswer": "7 days.",
+    "source": "doc-32-team-members-and-roles.md"
+  },
+  {
+    "id": 144,
+    "complexity": "simple-fact",
+    "question": "Which plan is required for SAML SSO?",
+    "referenceAnswer": "The Scale plan only.",
+    "source": "doc-33-sso-and-scim.md"
+  },
+  {
+    "id": 145,
+    "complexity": "edge-case",
+    "question": "Our identity provider is down and SSO is set to Required. How can anyone get into the dashboard?",
+    "referenceAnswer": "The account Owner keeps an email/password login as a break-glass fallback under Required enforcement and can sign in and disable SSO enforcement.",
+    "source": "doc-33-sso-and-scim.md"
+  },
+  {
+    "id": 146,
+    "complexity": "multi-step-reasoning",
+    "question": "A user is in both the 'eng-platform' group mapped to developer and 'sre-leads' mapped to admin. What role do they get, and could a group ever grant Owner?",
+    "referenceAnswer": "They get admin, the highest-privilege role among their mapped groups. The Owner role can never be assigned via SCIM or SAML.",
+    "source": "doc-33-sso-and-scim.md"
+  },
+  {
+    "id": 147,
+    "complexity": "simple-fact",
+    "question": "What role do new SSO users get if the loopwireRole attribute is missing?",
+    "referenceAnswer": "The 'Default role for new SSO users' setting, which defaults to viewer.",
+    "source": "doc-33-sso-and-scim.md"
+  },
+  {
+    "id": 148,
+    "complexity": "simple-fact",
+    "question": "How long are account audit log entries kept on the Scale plan?",
+    "referenceAnswer": "1 year.",
+    "source": "doc-34-account-audit-log.md"
+  },
+  {
+    "id": 149,
+    "complexity": "edge-case",
+    "question": "Can I see the account audit log on the Free plan?",
+    "referenceAnswer": "No, the account audit log is not available on Free; it's available on Growth (90 days) and Scale (1 year).",
+    "source": "doc-34-account-audit-log.md"
+  },
+  {
+    "id": 150,
+    "complexity": "multi-step-reasoning",
+    "question": "Deliveries to our endpoint suddenly stopped yesterday. How can the audit log help, and who on the team can look at it?",
+    "referenceAnswer": "Check subscriber.updated and subscriber.paused entries to see if someone changed or paused the subscriber. Only the Owner and Admins can view the audit log.",
+    "source": "doc-34-account-audit-log.md"
+  },
+  {
+    "id": 151,
+    "complexity": "simple-fact",
+    "question": "Are individual event publishes recorded in the account audit log?",
+    "referenceAnswer": "No. Publishes and deliveries are in the Event Log, not the account audit log.",
+    "source": "doc-34-account-audit-log.md"
+  },
+  {
+    "id": 152,
+    "complexity": "simple-fact",
+    "question": "What SOC 2 report does Loopwire have?",
+    "referenceAnswer": "A SOC 2 Type II report covering Security, Availability and Confidentiality, audited annually.",
+    "source": "doc-35-compliance-soc2-gdpr.md"
+  },
+  {
+    "id": 153,
+    "complexity": "edge-case",
+    "question": "Can I send patient health records through Loopwire if I encrypt them?",
+    "referenceAnswer": "No. Loopwire is not HIPAA-compliant and does not sign BAAs; PHI must not be sent through Loopwire.",
+    "source": "doc-35-compliance-soc2-gdpr.md"
+  },
+  {
+    "id": 154,
+    "complexity": "multi-step-reasoning",
+    "question": "A user asked us to erase their data. Their email is in some event payloads from last week. What can I do in Loopwire, and can I still redeliver those events afterwards?",
+    "referenceAnswer": "Find the events with the dashboard Event Log's payload search (Growth/Scale, last 7 days per query), then DELETE /v1/events/{eventId}/payload for each. Delivery metadata remains, but erased events can no longer be redelivered (409 payload_erased).",
+    "source": "doc-35-compliance-soc2-gdpr.md"
+  },
+  {
+    "id": 155,
+    "complexity": "simple-fact",
+    "question": "Do I need to sign a separate DPA with Loopwire?",
+    "referenceAnswer": "No. The DPA at loopwire.dev/legal/dpa is incorporated into the terms of service for all plans; a countersigned copy can be requested.",
+    "source": "doc-35-compliance-soc2-gdpr.md"
+  },
+  {
+    "id": 156,
+    "complexity": "simple-fact",
+    "question": "What is the base URL for the EU region?",
+    "referenceAnswer": "https://api.eu.loopwire.dev/v1",
+    "source": "doc-36-data-residency-and-regions.md"
+  },
+  {
+    "id": 157,
+    "complexity": "edge-case",
+    "question": "I sent a request for my EU project to api.loopwire.dev. What happens?",
+    "referenceAnswer": "It's rejected with 421 Misdirected Request (error code wrong_region) naming the correct EU base URL.",
+    "source": "doc-36-data-residency-and-regions.md"
+  },
+  {
+    "id": 158,
+    "complexity": "multi-step-reasoning",
+    "question": "We're on Growth with a US project and need to move to the EU. What do we have to do?",
+    "referenceAnswer": "The region can't be changed, and EU requires Scale. Upgrade to Scale, create a new EU project, recreate subscribers (new signing secrets), create new keys and deploy them with the EU base URL, then delete the old project once traffic has moved. Event history doesn't migrate.",
+    "source": "doc-36-data-residency-and-regions.md, doc-31-projects-and-environments.md"
+  },
+  {
+    "id": 159,
+    "complexity": "edge-case",
+    "question": "If all my projects are in the EU region, are team member emails also stored in the EU?",
+    "referenceAnswer": "No. Account and team member profiles, billing information and the account audit log are stored in the US regardless of project region.",
+    "source": "doc-36-data-residency-and-regions.md"
+  },
+  {
+    "id": 160,
+    "complexity": "simple-fact",
+    "question": "Where can I get the list of IP addresses Loopwire delivers from?",
+    "referenceAnswer": "GET https://api.loopwire.dev/v1/ips (no authentication required).",
+    "source": "doc-37-network-security-and-ip-ranges.md"
+  },
+  {
+    "id": 161,
+    "complexity": "edge-case",
+    "question": "If I allowlist Loopwire's delivery IPs on my firewall, do I still need to verify signatures?",
+    "referenceAnswer": "Yes. Other customers' deliveries come from the same IPs, so IP filtering isn't authentication; always verify Loopwire-Signature.",
+    "source": "doc-37-network-security-and-ip-ranges.md"
+  },
+  {
+    "id": 162,
+    "complexity": "multi-step-reasoning",
+    "question": "I enabled an IP allowlist on my Scale project and now my publishers get 403 errors. Should I retry, and how do I recover?",
+    "referenceAnswer": "Retrying a 403 never helps. Check error.code (ip_not_allowed); add your publishers' egress IPs (including NAT/serverless) to the allowlist, or have an Owner/Admin clear it from the dashboard, which is never blocked. Changes apply within 60 seconds.",
+    "source": "doc-37-network-security-and-ip-ranges.md"
+  },
+  {
+    "id": 163,
+    "complexity": "simple-fact",
+    "question": "Can I set a subscriber URL to an http:// address?",
+    "referenceAnswer": "No, subscriber URLs must be HTTPS; http:// URLs are rejected with 400 Bad Request.",
+    "source": "doc-37-network-security-and-ip-ranges.md"
+  },
+  {
+    "id": 164,
+    "complexity": "simple-fact",
+    "question": "How long does the old signing secret remain valid after rotation?",
+    "referenceAnswer": "24 hours.",
+    "source": "doc-38-signing-secret-rotation.md"
+  },
+  {
+    "id": 165,
+    "complexity": "edge-case",
+    "question": "During signing secret rotation, which signature comes first in the Loopwire-Signature header?",
+    "referenceAnswer": "The signature made with the new secret comes first, followed by the old secret's signature, comma-separated.",
+    "source": "doc-38-signing-secret-rotation.md"
+  },
+  {
+    "id": 166,
+    "complexity": "multi-step-reasoning",
+    "question": "I rotated a signing secret but forgot to deploy it; 25 hours later my endpoint started rejecting deliveries. Will those events be lost?",
+    "referenceAnswer": "Not immediately. Rejections count as delivery failures and follow the retry schedule (retries at 1min, 5min, 30min, 2h, 12h), so deploying the new secret before the final retry lets them succeed; after that they're marked failed and need manual redelivery.",
+    "source": "doc-38-signing-secret-rotation.md, doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 167,
+    "complexity": "edge-case",
+    "question": "What happens if I rotate a signing secret twice within 24 hours?",
+    "referenceAnswer": "The second rotation immediately expires the oldest secret; only the two most recent secrets are ever valid.",
+    "source": "doc-38-signing-secret-rotation.md"
+  },
+  {
+    "id": 168,
+    "complexity": "simple-fact",
+    "question": "How far in advance is scheduled maintenance announced?",
+    "referenceAnswer": "At least 72 hours in advance on status.loopwire.dev.",
+    "source": "doc-39-status-page-and-incidents.md"
+  },
+  {
+    "id": 169,
+    "complexity": "multi-step-reasoning",
+    "question": "Loopwire had a delivery outage for 3 hours. Did my subscriber burn through its retry attempts during that time?",
+    "referenceAnswer": "No. Attempts Loopwire couldn't make because of its own outage don't consume retries; accepted events are stored durably and delivered from the backlog when delivery resumes, possibly out of order.",
+    "source": "doc-39-status-page-and-incidents.md"
+  },
+  {
+    "id": 170,
+    "complexity": "edge-case",
+    "question": "I'm getting 429 errors and wondering if Loopwire is having an incident. Could that be the cause?",
+    "referenceAnswer": "No. 429 (and 402) are never caused by an incident; they reflect your own rate limit or quota.",
+    "source": "doc-39-status-page-and-incidents.md"
+  },
+  {
+    "id": 171,
+    "complexity": "simple-fact",
+    "question": "How soon after a major outage is the post-incident review published?",
+    "referenceAnswer": "Within 5 business days.",
+    "source": "doc-39-status-page-and-incidents.md"
+  },
+  {
+    "id": 172,
+    "complexity": "simple-fact",
+    "question": "What is the uptime SLA on the Scale plan?",
+    "referenceAnswer": "99.95% monthly API uptime.",
+    "source": "doc-40-sla-and-support-plans.md"
+  },
+  {
+    "id": 173,
+    "complexity": "edge-case",
+    "question": "Does the SLA guarantee that events reach my endpoint within 500ms?",
+    "referenceAnswer": "No. The SLA covers API availability only; 500ms is a typical delivery time, not a guarantee.",
+    "source": "doc-40-sla-and-support-plans.md"
+  },
+  {
+    "id": 174,
+    "complexity": "multi-step-reasoning",
+    "question": "We're on Growth and our publishing broke on a Saturday. When can we expect a support reply, and what would give us weekend coverage?",
+    "referenceAnswer": "Growth support is email with a 1 business day first response, excluding weekends, so the reply would come on the next business day. Scale provides 24/7 support with a 4-hour first response.",
+    "source": "doc-40-sla-and-support-plans.md"
+  },
+  {
+    "id": 175,
+    "complexity": "simple-fact",
+    "question": "Does the Free plan have an uptime SLA?",
+    "referenceAnswer": "No, Free has no SLA.",
+    "source": "doc-40-sla-and-support-plans.md"
+  },
+  {
+    "id": 176,
+    "complexity": "simple-fact",
+    "question": "Does Loopwire follow HTTP redirects when delivering to a subscriber?",
+    "referenceAnswer": "No. A 3xx redirect is treated as a delivery failure.",
+    "source": "doc-41-troubleshooting-delivery-failures.md"
+  },
+  {
+    "id": 177,
+    "complexity": "simple-fact",
+    "question": "What does the delivery status `skipped` mean?",
+    "referenceAnswer": "The subscriber was paused when the event was published; the event is not queued and won't be delivered automatically.",
+    "source": "doc-41-troubleshooting-delivery-failures.md"
+  },
+  {
+    "id": 178,
+    "complexity": "multi-step-reasoning",
+    "question": "My endpoint's last attempts show response times around 10,000 ms and status failed, but my database shows the orders were processed. What's going on and what should I change?",
+    "referenceAnswer": "The endpoint finishes processing but responds after the 10-second timeout, so Loopwire records a failure and retries (possibly causing duplicate processing). Acknowledge with 2xx quickly and do the work asynchronously, and deduplicate on Loopwire-Event-Id.",
+    "source": "doc-41-troubleshooting-delivery-failures.md"
+  },
+  {
+    "id": 179,
+    "complexity": "edge-case",
+    "question": "An event shows status delivered in the Loopwire dashboard, but my app never acted on it. Will Loopwire retry it?",
+    "referenceAnswer": "No. Loopwire's responsibility ends when the endpoint returns 2xx; the failure happened in your own background processing, so check your queue/worker logs keyed on Loopwire-Event-Id.",
+    "source": "doc-41-troubleshooting-delivery-failures.md"
+  },
+  {
+    "id": 180,
+    "complexity": "simple-fact",
+    "question": "Should I retry a 401 Unauthorized response from the Loopwire API?",
+    "referenceAnswer": "No. 401 and 403 are not retryable; retrying with the same key will fail every time.",
+    "source": "doc-42-troubleshooting-authentication-errors.md"
+  },
+  {
+    "id": 181,
+    "complexity": "simple-fact",
+    "question": "What status code does a read-only scoped key get when it tries to publish an event?",
+    "referenceAnswer": "403 Forbidden.",
+    "source": "doc-42-troubleshooting-authentication-errors.md"
+  },
+  {
+    "id": 182,
+    "complexity": "multi-step-reasoning",
+    "question": "My publisher worked yesterday but today every request returns 403 even though the key hasn't changed. We're on the Scale plan and migrated to a new Kubernetes cluster last night. What is the likely cause?",
+    "referenceAnswer": "IP allowlisting: Scale projects can restrict source IPs for /v1/events, and requests from non-allowlisted IPs (such as the new cluster's NAT gateway) get 403 even with a valid key. Add the new IPs under Project Settings > Network.",
+    "source": "doc-42-troubleshooting-authentication-errors.md"
+  },
+  {
+    "id": 183,
+    "complexity": "edge-case",
+    "question": "I set Authorization to my lw_live key without the word Bearer. What response will I get?",
+    "referenceAnswer": "401 Unauthorized; the header must be exactly `Authorization: Bearer <key>`.",
+    "source": "doc-42-troubleshooting-authentication-errors.md"
+  },
+  {
+    "id": 184,
+    "complexity": "simple-fact",
+    "question": "What unit is the Retry-After header in?",
+    "referenceAnswer": "Seconds.",
+    "source": "doc-43-troubleshooting-rate-limit-and-quota-errors.md"
+  },
+  {
+    "id": 185,
+    "complexity": "simple-fact",
+    "question": "Does creating more API keys increase my rate limit?",
+    "referenceAnswer": "No, rate limits apply per project, not per API key.",
+    "source": "doc-43-troubleshooting-rate-limit-and-quota-errors.md"
+  },
+  {
+    "id": 186,
+    "complexity": "multi-step-reasoning",
+    "question": "I run 10 workers each limited to 10 requests/second on the Free plan and keep getting 429s. Why, and what are two ways to fix it?",
+    "referenceAnswer": "Combined the workers send 100 req/s against a per-project limit of 10 req/s (burst 20). Use one shared limiter across workers and/or batch events with POST /v1/events/batch (up to 100 events count as 1 request), or upgrade the plan.",
+    "source": "doc-43-troubleshooting-rate-limit-and-quota-errors.md"
+  },
+  {
+    "id": 187,
+    "complexity": "edge-case",
+    "question": "Should my exponential backoff logic also handle 402 responses?",
+    "referenceAnswer": "No. 402 means the monthly quota is exceeded and retrying never helps until you upgrade or the billing cycle resets; treat it as an alert, not a transient error.",
+    "source": "doc-43-troubleshooting-rate-limit-and-quota-errors.md, doc-03-rate-limits-quotas.md"
+  },
+  {
+    "id": 188,
+    "complexity": "simple-fact",
+    "question": "What is the recommended maximum time for the synchronous part of a webhook handler?",
+    "referenceAnswer": "Under 200 ms: verify the signature, enqueue, and return 2xx.",
+    "source": "doc-44-performance-best-practices.md"
+  },
+  {
+    "id": 189,
+    "complexity": "simple-fact",
+    "question": "How much latency does creating a new TLS connection per event add?",
+    "referenceAnswer": "About 50-150 ms per event.",
+    "source": "doc-44-performance-best-practices.md"
+  },
+  {
+    "id": 190,
+    "complexity": "multi-step-reasoning",
+    "question": "I use the Loopwire Node SDK and wrapped each publish call in my own 5-attempt retry loop. Is that a good idea?",
+    "referenceAnswer": "No. The SDK already auto-retries 429 and 500 up to 5 attempts; wrapping it in another retry loop multiplies attempts. Remove the outer loop.",
+    "source": "doc-44-performance-best-practices.md"
+  },
+  {
+    "id": 191,
+    "complexity": "edge-case",
+    "question": "A batch publish returned 207. Can I treat that as success?",
+    "referenceAnswer": "No. 207 Multi-Status means partial failure; you must check the per-event results.",
+    "source": "doc-44-performance-best-practices.md"
+  },
+  {
+    "id": 192,
+    "complexity": "simple-fact",
+    "question": "How long does Loopwire remember an idempotency key?",
+    "referenceAnswer": "24 hours.",
+    "source": "doc-45-idempotency-guide.md"
+  },
+  {
+    "id": 193,
+    "complexity": "simple-fact",
+    "question": "Why is generating a random UUID on every attempt a bad idempotency key?",
+    "referenceAnswer": "Because every retry gets a new key, so Loopwire treats each attempt as a new event and there is no duplicate protection.",
+    "source": "doc-45-idempotency-guide.md"
+  },
+  {
+    "id": 194,
+    "complexity": "multi-step-reasoning",
+    "question": "My first publish with idempotencyKey 'abc' returned 400 because a field was missing. I fixed the payload. Can I reuse 'abc', and what if the first request had instead returned 202?",
+    "referenceAnswer": "After a 400 nothing was stored, so reusing 'abc' with the fixed payload publishes normally. If the first had returned 202, resending 'abc' with a different payload within 24 hours would return 409 Conflict.",
+    "source": "doc-45-idempotency-guide.md"
+  },
+  {
+    "id": 195,
+    "complexity": "edge-case",
+    "question": "Does an idempotencyKey prevent my subscriber from receiving the same event twice?",
+    "referenceAnswer": "No. It only prevents duplicate publishes; delivery retries can still send the same event twice, so subscribers must deduplicate on Loopwire-Event-Id.",
+    "source": "doc-45-idempotency-guide.md"
+  },
+  {
+    "id": 196,
+    "complexity": "simple-fact",
+    "question": "What delivery guarantee does Loopwire provide?",
+    "referenceAnswer": "At-least-once delivery with no ordering guarantee.",
+    "source": "doc-46-event-ordering-and-deduplication.md"
+  },
+  {
+    "id": 197,
+    "complexity": "simple-fact",
+    "question": "Which header should subscribers use to deduplicate deliveries?",
+    "referenceAnswer": "Loopwire-Event-Id, which stays the same across retries and redeliveries.",
+    "source": "doc-46-event-ordering-and-deduplication.md"
+  },
+  {
+    "id": 198,
+    "complexity": "multi-step-reasoning",
+    "question": "I'm on the Growth plan. How long should I keep processed event IDs to safely deduplicate, including manual redeliveries?",
+    "referenceAnswer": "At least the payload retention window, 30 days on Growth, since manual redelivery is possible for that long (automatic retries finish about 12 hours after the first attempt).",
+    "source": "doc-46-event-ordering-and-deduplication.md"
+  },
+  {
+    "id": 199,
+    "complexity": "edge-case",
+    "question": "If Loopwire-Delivery-Attempt is 1, can I assume I've never seen this event before?",
+    "referenceAnswer": "No. Manual redelivery resets the retry counter, so attempt 1 can be a repeat; always deduplicate on the event ID.",
+    "source": "doc-46-event-ordering-and-deduplication.md"
+  },
+  {
+    "id": 200,
+    "complexity": "simple-fact",
+    "question": "Where do you create alert rules in Loopwire?",
+    "referenceAnswer": "Project Settings > Alerts > New Alert.",
+    "source": "doc-47-monitoring-and-alerts.md"
+  },
+  {
+    "id": 201,
+    "complexity": "simple-fact",
+    "question": "What p95 response-time alert threshold does Loopwire recommend?",
+    "referenceAnswer": "Above 5,000 ms over 15 minutes.",
+    "source": "doc-47-monitoring-and-alerts.md"
+  },
+  {
+    "id": 202,
+    "complexity": "multi-step-reasoning",
+    "question": "Why does Loopwire recommend an alert when a subscriber is paused?",
+    "referenceAnswer": "Because events published while a subscriber is paused are not queued (they're skipped), so an unnoticed pause silently loses deliveries.",
+    "source": "doc-47-monitoring-and-alerts.md, doc-07-webhooks-overview.md"
+  },
+  {
+    "id": 203,
+    "complexity": "edge-case",
+    "question": "Failures suddenly spike across many unrelated subscribers at once. What should I check first?",
+    "referenceAnswer": "The Loopwire status page at status.loopwire.dev, before debugging your own endpoints.",
+    "source": "doc-47-monitoring-and-alerts.md"
+  },
+  {
+    "id": 204,
+    "complexity": "simple-fact",
+    "question": "Is the Datadog integration available on the Free plan?",
+    "referenceAnswer": "No, Datadog is available on Growth and Scale only.",
+    "source": "doc-48-integrations-slack-datadog-pagerduty.md"
+  },
+  {
+    "id": 205,
+    "complexity": "simple-fact",
+    "question": "How often does Loopwire send metrics to Datadog?",
+    "referenceAnswer": "Every 60 seconds.",
+    "source": "doc-48-integrations-slack-datadog-pagerduty.md"
+  },
+  {
+    "id": 206,
+    "complexity": "multi-step-reasoning",
+    "question": "A flapping subscriber keeps triggering and resolving the same alert. Will PagerDuty get dozens of incidents?",
+    "referenceAnswer": "No. The PagerDuty dedup key is the alert rule ID plus the subscriber ID, so it updates a single incident, and resolved alerts auto-resolve it.",
+    "source": "doc-48-integrations-slack-datadog-pagerduty.md"
+  },
+  {
+    "id": 207,
+    "complexity": "edge-case",
+    "question": "What happens to alert rules if I remove the Slack integration?",
+    "referenceAnswer": "They fall back to email notifications to the project's Owners and Admins, so alerts aren't silently dropped.",
+    "source": "doc-48-integrations-slack-datadog-pagerduty.md"
+  },
+  {
+    "id": 208,
+    "complexity": "simple-fact",
+    "question": "Why must a webhook handler verify the signature against the raw request body?",
+    "referenceAnswer": "Because the HMAC is computed over the exact bytes sent; parsing and re-serializing JSON changes the bytes and breaks verification.",
+    "source": "doc-49-subscriber-endpoint-design.md"
+  },
+  {
+    "id": 209,
+    "complexity": "simple-fact",
+    "question": "What should my endpoint return for a duplicate event it has already processed?",
+    "referenceAnswer": "200 (a 2xx), so it isn't retried.",
+    "source": "doc-49-subscriber-endpoint-design.md"
+  },
+  {
+    "id": 210,
+    "complexity": "multi-step-reasoning",
+    "question": "I'm rotating my subscriber's signing secret. How should my verification code change during the rotation?",
+    "referenceAnswer": "For 24 hours the Loopwire-Signature header contains two comma-separated signatures (new first); split on commas and accept if either matches, using a constant-time comparison.",
+    "source": "doc-49-subscriber-endpoint-design.md"
+  },
+  {
+    "id": 211,
+    "complexity": "edge-case",
+    "question": "I need to take my endpoint down for 2 hours of maintenance and can't lose events. Should I pause the subscriber?",
+    "referenceAnswer": "No. Paused subscribers don't queue events. Instead return 503 during maintenance; Loopwire retries on its schedule for about 12 hours after the first attempt.",
+    "source": "doc-49-subscriber-endpoint-design.md"
+  },
+  {
+    "id": 212,
+    "complexity": "simple-fact",
+    "question": "What prefix do signing secrets have?",
+    "referenceAnswer": "whsec_",
+    "source": "doc-50-glossary.md"
+  },
+  {
+    "id": 213,
+    "complexity": "simple-fact",
+    "question": "What is the ID prefix for a delivery?",
+    "referenceAnswer": "dlv_",
+    "source": "doc-50-glossary.md"
+  },
+  {
+    "id": 214,
+    "complexity": "multi-step-reasoning",
+    "question": "One event is published to 3 subscribers. How many deliveries and how many quota events does that create?",
+    "referenceAnswer": "3 deliveries (one per subscriber) but only 1 event toward the quota.",
+    "source": "doc-50-glossary.md, doc-08-frequently-asked-questions.md"
+  },
+  {
+    "id": 215,
+    "complexity": "edge-case",
+    "question": "Can I move an existing project from the US region to the EU region?",
+    "referenceAnswer": "No. The region is chosen at project creation and cannot be changed.",
+    "source": "doc-50-glossary.md"
+  }
+]
